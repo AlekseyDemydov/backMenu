@@ -25,21 +25,17 @@ import {
 // Налаштовуємо змінні середовища
 dotenv.config();
 
-
-
 // Підключаємось до бази даних MongoDB
-
-// mongoose.connect("mongodb+srv://ADministartor:jpUnrAK80ITx0A30@clusterelf.n3cs9ie.mongodb.net/ElfBar?retryWrites=true&w=majority")
-// mongoose.connect("mongodb+srv://agdemidof:s1lenth1llQq@clusterelf.n3cs9ie.mongodb.net/Menu?retryWrites=true&w=majority")
-mongoose.connect("mongodb+srv://agdemidof:fAgjjNapYHgeBnUI@menu.pzuhz.mongodb.net/Menu?retryWrites=true&w=majority")
-// mongoose.connect(process.env.MONGODB_URI)
+mongoose.connect(process.env.MONGODB_URI)
   .then(() => console.log("DB connected"))
   .catch((err) => console.error("DB connection error", err));
 
 // Створюємо екземпляр додатку Express
 const app = express();
+
 // const allowedOrigin = "https://cloud-crafters.com.ua" || "http://localhost:3000";
 
+// Налаштовуємо CORS (можна залишити цей код, але Vercel автоматично дозволяє CORS)
 app.use((req, res, next) => {
   res.setHeader("Access-Control-Allow-Origin", "*");
   res.setHeader('Access-Control-Allow-Methods', 'GET, POST, OPTIONS, PUT, PATCH, DELETE');
@@ -47,7 +43,6 @@ app.use((req, res, next) => {
   res.setHeader('Access-Control-Allow-Credentials', true);
   next();
 });
-
 
 // Використовуємо middlewares для Express
 app.use(cors()); // Для дозволу CORS
@@ -109,11 +104,5 @@ app.use((err, req, res, next) => {
   res.status(500).json({ message: "Internal Server Error" });
 });
 
-
-
-const PORT = process.env.PORT || 4444;
-// Запускаємо сервер на HTTPS
-app.listen(PORT, () => {
-  console.log(`Server is running on port ${PORT}`);
-});
-
+// Експортуємо для Vercel
+export default app;
