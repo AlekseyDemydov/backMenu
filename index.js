@@ -7,6 +7,7 @@ import dotenv from "dotenv";
 import fs from "fs";
 import path from "path";
 import { fileURLToPath } from 'url';
+// import http from 'http';
 
 // Імпортуємо моделі користувачів, продуктів і замовлень
 import { User, Product } from "./models/index.js";
@@ -26,6 +27,7 @@ import {
 dotenv.config();
 
 // Підключаємось до бази даних MongoDB
+// mongoose.connect("mongodb+srv://agdemidof:fAgjjNapYHgeBnUI@menu.pzuhz.mongodb.net/Menu?retryWrites=true&w=majority")
 mongoose.connect(process.env.MONGODB_URI)
   .then(() => console.log("DB connected"))
   .catch((err) => console.error("DB connection error", err));
@@ -103,6 +105,12 @@ app.use((err, req, res, next) => {
   console.error(err.stack);
   res.status(500).json({ message: "Internal Server Error" });
 });
-
+// const PORT = process.env.PORT || 4444;
+// app.listen(PORT, () => {
+//   console.log(`Server is running on port ${PORT}`);
+// });
+// http.createServer(app).listen(process.env.PORT, process.env.HOST, () => {
+//   console.log(`Server is running on port ${process.env.PORT}`);
+// });
 // Експортуємо для Vercel
 export default app;
