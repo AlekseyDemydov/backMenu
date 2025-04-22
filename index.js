@@ -19,10 +19,10 @@ import productRoutes from "./routes/productRoutes.js";
 dotenv.config();
 
 // Підключаємось до бази даних MongoDB
-mongoose.connect("mongodb+srv://agdemidof:fAgjjNapYHgeBnUI@menu.pzuhz.mongodb.net/Menu?retryWrites=true&w=majority")
-// mongoose.connect(process.env.MONGODB_URI)
-//   .then(() => console.log("DB connected"))
-//   .catch((err) => console.error("DB connection error", err));
+// mongoose.connect("mongodb+srv://agdemidof:fAgjjNapYHgeBnUI@menu.pzuhz.mongodb.net/Menu?retryWrites=true&w=majority")
+mongoose.connect(process.env.MONGODB_URI)
+  .then(() => console.log("DB connected"))
+  .catch((err) => console.error("DB connection error", err));
 
 // Створюємо екземпляр додатку Express
 const app = express();
@@ -91,10 +91,10 @@ app.use((err, req, res, next) => {
   console.error(err.stack);
   res.status(500).json({ message: "Internal Server Error" });
 });
-const PORT = process.env.PORT || 4444;
-app.listen(PORT, () => {
-  console.log(`Server is running on port ${PORT}`);
-});
+// const PORT = process.env.PORT || 4444;
+// app.listen(PORT, () => {
+//   console.log(`Server is running on port ${PORT}`);
+// });
 
 // http.createServer(app).listen(process.env.PORT, process.env.HOST, () => {
 //   console.log(`Server is running on port ${process.env.PORT}`);
