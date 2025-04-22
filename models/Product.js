@@ -1,40 +1,5 @@
-// import mongoose from "mongoose";
-
-// const { Schema } = mongoose;
-
-
-// const ProductSchema = new Schema({
-//   name: {
-//     type: String,
-//     required: [true, "Name is required"],
-//     trim: true,
-//   },
-//   description: {
-//     type:  String,
-  
-//   },
-//   text: {
-//     type:  String,
-  
-//   },
-//   price: {
-//     type: Number,
-//     required: [true, "Price is required"],
-//     min: [0, "Price cannot be negative"],
-//   },
-//   imageUrl: {
-//     type: String,
-//     trim: true,
-//   },
-// }, {
-//   timestamps: true,
-// });
-
-// const Product = mongoose.model("Product", ProductSchema);
-
-// export default Product;
-
 import mongoose from "mongoose";
+import { v4 as uuidv4 } from "uuid"; // Додаємо uuid для генерації унікальних ID
 
 const { Schema } = mongoose;
 
@@ -49,6 +14,9 @@ const ProductSchema = new Schema({
     type: String,
     required: [true, "Price is required"],
   },
+  price2: {
+    type: String
+  },
   src: {
     type: String,
     required: [true, "Image source is required"],
@@ -61,6 +29,18 @@ const ProductSchema = new Schema({
     type: String,
     default: "",
   },
+  isNew: {
+    type: Boolean,
+    default: false, // за замовчуванням товар не новий
+  },
+  zvd: {
+    type: String,
+    default: "",
+  },
+  _id: {
+    type: String,
+    default: uuidv4, // Автоматичне генерування унікального ID
+  }
 }, {
   timestamps: true,  // Додаємо час створення та оновлення
 });
@@ -72,6 +52,10 @@ const SubcategorySchema = new Schema({
     required: [true, "Subcategory name is required"],
   },
   items: [ProductSchema], // Масив продуктів у підкатегорії
+  _id: {
+    type: String,
+    default: uuidv4, // Автоматичне генерування унікального ID для підкатегорій
+  }
 }, {
   timestamps: true,  // Додаємо час створення та оновлення підкатегорії
 });
@@ -83,10 +67,14 @@ const CategorySchema = new Schema({
     required: [true, "Category name is required"],
   },
   subcategories: [SubcategorySchema], // Масив підкатегорій
+  _id: {
+    type: String,
+    default: uuidv4, // Автоматичне генерування унікального ID для категорій
+  }
 }, {
   timestamps: true,  // Додаємо час створення та оновлення категорії
 });
 
-const Product = mongoose.model("Category", CategorySchema);
+const ProductModel = mongoose.model("Category", CategorySchema);
 
-export default Product;
+export default ProductModel;

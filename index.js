@@ -10,27 +10,19 @@ import { fileURLToPath } from 'url';
 // import http from 'http';
 
 // Імпортуємо моделі користувачів, продуктів і замовлень
-import { User, Product } from "./models/index.js";
+import { Product } from "./models/index.js";
 
 // Імпортуємо контролери для роботи з роутами
-import {
-  createProduct,
-  getAllProducts,
-  getOneProduct,
-  deleteProduct,
-  updateProduct,
-  getMe,
-  createUser,
-} from "./controllers/index.js";
+import productRoutes from "./routes/productRoutes.js";
 
 // Налаштовуємо змінні середовища
 dotenv.config();
 
 // Підключаємось до бази даних MongoDB
-// mongoose.connect("mongodb+srv://agdemidof:fAgjjNapYHgeBnUI@menu.pzuhz.mongodb.net/Menu?retryWrites=true&w=majority")
-mongoose.connect(process.env.MONGODB_URI)
-  .then(() => console.log("DB connected"))
-  .catch((err) => console.error("DB connection error", err));
+mongoose.connect("mongodb+srv://agdemidof:fAgjjNapYHgeBnUI@menu.pzuhz.mongodb.net/Menu?retryWrites=true&w=majority")
+// mongoose.connect(process.env.MONGODB_URI)
+//   .then(() => console.log("DB connected"))
+//   .catch((err) => console.error("DB connection error", err));
 
 // Створюємо екземпляр додатку Express
 const app = express();
@@ -81,19 +73,13 @@ app.post("/upload", upload.single("image"), (req, res) => {
 });
 
 // Додаємо моделі до контексту додатку Express
-app.set('UserModel', User);
+
 app.set('ProductModel', Product);
 
-// Маршрути для користувачів
-app.get("/me", getMe);
-app.post("/me", createUser);
+
 
 // Маршрути для продуктів
-app.get("/products", getAllProducts);
-app.get("/products/:id", getOneProduct);
-app.post("/products", createProduct);
-app.delete("/products/:id", deleteProduct);
-app.put("/products/:id", updateProduct);
+app.use("/api/products", productRoutes);
 
 // Маршрут, що викликається, якщо запит не знайдено
 app.use((req, res, next) => {
@@ -105,10 +91,11 @@ app.use((err, req, res, next) => {
   console.error(err.stack);
   res.status(500).json({ message: "Internal Server Error" });
 });
-// const PORT = process.env.PORT || 4444;
-// app.listen(PORT, () => {
-//   console.log(`Server is running on port ${PORT}`);
-// });
+const PORT = process.env.PORT || 4444;
+app.listen(PORT, () => {
+  console.log(`Server is running on port ${PORT}`);
+});
+
 // http.createServer(app).listen(process.env.PORT, process.env.HOST, () => {
 //   console.log(`Server is running on port ${process.env.PORT}`);
 // });

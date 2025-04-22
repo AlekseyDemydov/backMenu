@@ -1,121 +1,157 @@
-import Product from '../models/Product.js'; // Імпортуємо модель Product
-import { v4 as uuidv4 } from "uuid";  // Бібліотека для генерації унікальних ID
-// Контролер для створення нового продукту
+import ProductModel from "../models/Product.js";
+import { v4 as uuidv4 } from "uuid"; // Бібліотека для генерації унікальних ID
 
-
-export const createProduct = async (req, res) => {
+// Отримати всі категорії з підкатегоріями та товарами
+export const getAll = async (req, res) => {
   try {
-    const { category, subcategory, title, price, src, text, description } = req.body;
+    const categories = await ProductModel.find();
+    res.json(categories);
+  } catch (err) {
+    res.status(500).json({ message: "Не вдалося отримати дані" });
+  }
+};
 
-    // Знайдемо категорію, якщо вона існує
-    let categoryDoc = await Product.findOne({ "category": category });
+// Додати нову категорію
+export const addCategory = async (req, res) => {
+  try {
+    const doc = new ProductModel({
+      _id: uuidv4(),
+      category: req.body.category,
+      subcategories: [],
+    });
 
-    if (!categoryDoc) {
-      // Якщо категорія не знайдена, створимо нову категорію
-      categoryDoc = new Product({
-        category,
-        subcategories: []
-      });
-    }
+    const category = await doc.save();
+    res.json(category);
+  } catch (err) {
+    res.status(500).json({ message: "Не вдалося створити категорію" });
+  }
+};
 
-    // Знайдемо підкатегорію в межах категорії
-    let subcategoryDoc = categoryDoc.subcategories.find(
-      (sub) => sub.subcategory === subcategory
+// Додати підкатегорію до конкретної категорії
+export const addSubcategory = async (req, res) => {
+  try {
+    const { categoryId } = req.params;
+    const { subcategory } = req.body;
+
+    const updatedCategory = await ProductModel.findByIdAndUpdate(
+      categoryId,
+      {
+        $push: {
+          subcategories: {
+            _id: uuidv4(),
+            subcategory,
+            items: [],
+          },
+        },
+      },
+      { new: true }
     );
 
-    if (!subcategoryDoc) {
-      // Якщо підкатегорія не знайдена, створимо нову підкатегорію
-      subcategoryDoc = {
-        subcategory,
-        items: []
-      };
-      // Додаємо нову підкатегорію до категорії
-      categoryDoc.subcategories.push(subcategoryDoc);
-    }
+    res.json(updatedCategory);
+  } catch (err) {
+    res.status(500).json({ message: "Не вдалося додати підкатегорію" });
+  }
+};
 
-    // Створимо новий продукт з унікальним id
-    const newProduct = {
-      id: uuidv4(), // Генерація унікального ID для продукту
-      title,
-      price,
-      src,
-      text,
-      description,
+// Додати продукт до конкретної підкатегорії
+export const addProduct = async (req, res) => {
+  try {
+    const { categoryId, subcategoryId } = req.params;
+    const productData = {
+      ...req.body,
+      _id: uuidv4(),
     };
 
-    // Додаємо продукт до підкатегорії
-    subcategoryDoc.items.push(newProduct);
+    const category = await ProductModel.findById(categoryId);
+    if (!category) return res.status(404).json({ message: "Категорія не знайдена" });
 
-    // Зберігаємо зміни в базі даних (якщо категорія була новою, її також збережемо)
-    await categoryDoc.save();
+    const subcategory = category.subcategories.id(subcategoryId);
+    if (!subcategory) return res.status(404).json({ message: "Підкатегорія не знайдена" });
 
-    res.status(201).json(newProduct);
-  } catch (error) {
-    console.error('Помилка при створенні продукту:', error);
-    res.status(500).json({
-      message: 'Не вдалося створити продукт',
-    });
+    subcategory.items.push(productData);
+    await category.save();
+
+    res.json(subcategory);
+  } catch (err) {
+    res.status(500).json({ message: "Не вдалося додати продукт" });
   }
 };
 
-// Контролер для отримання всіх продуктів
-export const getAllProducts = async (req, res) => {
-  try {
-    const products = await Product.find();
-    res.json(products);
-  } catch (error) {
-    console.error('Помилка при отриманні продуктів:', error);
-    res.status(500).json({
-      message: 'Не вдалося отримати список продуктів',
-    });
-  }
-};
-
-// Контролер для отримання одного продукту за його ідентифікатором
-export const getOneProduct = async (req, res) => {
-  try {
-    const productId = req.params.id;
-    const product = await Product.findById(productId);
-
-    if (!product) {
-      return res.status(404).json({ message: 'Продукт не знайдено' });
-    }
-
-    res.json(product);
-  } catch (error) {
-    console.error('Помилка при отриманні продукту:', error);
-    res.status(500).json({
-      message: 'Не вдалося отримати продукт',
-    });
-  }
-};
-
-// Контролер для видалення продукту
-export const deleteProduct = async (req, res) => {
-  try {
-      const productId = req.params.id;
-      const deletedProduct = await Product.findByIdAndDelete(productId);
-      if (!deletedProduct) {
-          return res.status(404).json({ message: 'Продукт не знайдено' });
-      }
-      res.json({ message: 'Продукт успішно видалено' });
-  } catch (error) {
-      console.error('Помилка при видаленні продукту:', error);
-      res.status(500).json({ message: 'Не вдалося видалити продукт' });
-  }
-};
-
-// Контролер для оновлення продукту
+// Оновити продукт
 export const updateProduct = async (req, res) => {
   try {
-      const productId = req.params.id;
-      const updatedProduct = await Product.findByIdAndUpdate(productId, req.body, { new: true });
-      if (!updatedProduct) {
-          return res.status(404).json({ message: 'Продукт не знайдено' });
-      }
-      res.json(updatedProduct);
-  } catch (error) {
-      console.error('Помилка при оновленні продукту:', error);
-      res.status(500).json({ message: 'Не вдалося оновити продукт' });
+    const { categoryId, subcategoryId, productId } = req.params;
+    const productData = req.body;
+
+    const oldCategory = await ProductModel.findById(categoryId);
+    if (!oldCategory) return res.status(404).json({ message: "Категорія не знайдена" });
+
+    const oldSubcategory = oldCategory.subcategories.id(subcategoryId);
+    if (!oldSubcategory) return res.status(404).json({ message: "Підкатегорія не знайдена" });
+
+    const productIndex = oldSubcategory.items.findIndex(p => p._id.toString() === productId);
+    if (productIndex === -1) return res.status(404).json({ message: "Продукт не знайдено" });
+
+    const product = oldSubcategory.items[productIndex];
+
+    // Якщо не змінилася категорія і підкатегорія, просто оновлюємо:
+    if (
+      categoryId === productData.categoryId &&
+      subcategoryId === productData.subcategoryId
+    ) {
+      Object.assign(product, productData);
+      oldCategory.markModified("subcategories");
+      await oldCategory.save();
+      return res.json(product);
+    }
+
+    // Інакше: видаляємо з поточного місця
+    oldSubcategory.items.splice(productIndex, 1);
+
+    // Додаємо в нову категорію/підкатегорію
+    const newCategory = await ProductModel.findById(productData.categoryId);
+    if (!newCategory) return res.status(404).json({ message: "Нова категорія не знайдена" });
+
+    const newSubcategory = newCategory.subcategories.id(productData.subcategoryId);
+    if (!newSubcategory) return res.status(404).json({ message: "Нова підкатегорія не знайдена" });
+
+    newSubcategory.items.push(productData);
+
+    oldCategory.markModified("subcategories");
+    newCategory.markModified("subcategories");
+
+    await oldCategory.save();
+    await newCategory.save();
+
+    res.json(productData);
+  } catch (err) {
+    console.error("Помилка при оновленні продукту:", err);
+    res.status(500).json({ message: "Не вдалося оновити продукт" });
+  }
+};
+
+
+// Видалити продукт
+export const deleteProduct = async (req, res) => {
+  try {
+    const { categoryId, subcategoryId, productId } = req.params;
+
+    const category = await ProductModel.findById(categoryId);
+    if (!category) return res.status(404).json({ message: "Категорія не знайдена" });
+
+    const subcategory = category.subcategories.id(subcategoryId);
+    if (!subcategory) return res.status(404).json({ message: "Підкатегорія не знайдена" });
+
+    const product = subcategory.items.id(productId);
+    if (!product) return res.status(404).json({ message: "Продукт не знайдено" });
+
+    product.deleteOne();
+    category.markModified("subcategories");
+    await category.save();
+
+    res.json({ message: "Продукт видалено" });
+  } catch (err) {
+    console.error("Помилка видалення:", err);
+    res.status(500).json({ message: "Не вдалося видалити продукт" });
   }
 };
