@@ -27,7 +27,6 @@ mongoose.connect(process.env.MONGODB_URI)
 // Створюємо екземпляр додатку Express
 const app = express();
 
-// const allowedOrigin = "https://cloud-crafters.com.ua" || "http://localhost:3000";
 
 // Налаштовуємо CORS (можна залишити цей код, але Vercel автоматично дозволяє CORS)
 app.use((req, res, next) => {
@@ -91,13 +90,14 @@ app.use((err, req, res, next) => {
   console.error(err.stack);
   res.status(500).json({ message: "Internal Server Error" });
 });
+
+
+
 // const PORT = process.env.PORT || 4444;
 // app.listen(PORT, () => {
 //   console.log(`Server is running on port ${PORT}`);
 // });
 
-// http.createServer(app).listen(process.env.PORT, process.env.HOST, () => {
-//   console.log(`Server is running on port ${process.env.PORT}`);
-// });
+
 // Експортуємо для Vercel
 export default app;
