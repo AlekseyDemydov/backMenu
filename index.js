@@ -82,7 +82,7 @@ app.set('ProductModel', Product);
 app.use("/api/products", productRoutes);
 app.use("/auth", authRoutes);
 
-// Маршрут, що викликається, якщо запит не знайдено
+// Маршрут, що викликається, якщо запит не знайденоj
 app.use((req, res, next) => {
   res.status(404).json({ message: "Not Found" });
 });
