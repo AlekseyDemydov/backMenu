@@ -4,7 +4,8 @@ import mongoose from "mongoose";
 import cors from "cors";
 import helmet from "helmet";
 import multer from "multer";
-
+import dotenv from "dotenv";
+dotenv.config();
 import fs from "fs";
 import path from "path";
 import { fileURLToPath } from 'url';
@@ -20,10 +21,6 @@ import authRoutes from "./routes/authRoutes.js";
 
 
 // Підключаємось до бази даних MongoDB
-// mongoose.connect("mongodb+srv://agdemidof:fAgjjNapYHgeBnUI@menu.pzuhz.mongodb.net/Menu?retryWrites=true&w=majority")
-//   .then(() => console.log("DB connected"))
-//   .catch((err) => console.error("DB connection error", err));
-
 mongoose.connect(process.env.MONGODB_URI)
   .then(() => console.log("DB connected"))
   .catch((err) => console.error("DB connection error", err));
