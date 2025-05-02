@@ -5,7 +5,6 @@ import cors from "cors";
 import helmet from "helmet";
 import multer from "multer";
 import dotenv from "dotenv";
-dotenv.config();
 import fs from "fs";
 import path from "path";
 import { fileURLToPath } from 'url';
@@ -19,6 +18,7 @@ import productRoutes from "./routes/productRoutes.js";
 import authRoutes from "./routes/authRoutes.js";
 
 
+dotenv.config();
 
 // Підключаємось до бази даних MongoDB
 mongoose.connect(process.env.MONGODB_URI)
