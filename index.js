@@ -1,9 +1,10 @@
+
 import express from "express";
 import mongoose from "mongoose";
 import cors from "cors";
 import helmet from "helmet";
 import multer from "multer";
-import dotenv from "dotenv";
+
 import fs from "fs";
 import path from "path";
 import { fileURLToPath } from 'url';
@@ -14,12 +15,15 @@ import { Product } from "./models/index.js";
 
 // Імпортуємо контролери для роботи з роутами
 import productRoutes from "./routes/productRoutes.js";
+import authRoutes from "./routes/authRoutes.js";
 
-// Налаштовуємо змінні середовища
-dotenv.config();
+
 
 // Підключаємось до бази даних MongoDB
 // mongoose.connect("mongodb+srv://agdemidof:fAgjjNapYHgeBnUI@menu.pzuhz.mongodb.net/Menu?retryWrites=true&w=majority")
+//   .then(() => console.log("DB connected"))
+//   .catch((err) => console.error("DB connection error", err));
+
 mongoose.connect(process.env.MONGODB_URI)
   .then(() => console.log("DB connected"))
   .catch((err) => console.error("DB connection error", err));
@@ -79,6 +83,7 @@ app.set('ProductModel', Product);
 
 // Маршрути для продуктів
 app.use("/api/products", productRoutes);
+app.use("/auth", authRoutes);
 
 // Маршрут, що викликається, якщо запит не знайдено
 app.use((req, res, next) => {
