@@ -211,3 +211,66 @@ export const toggleLike = async (req, res) => {
     res.status(500).json({ message: "Помилка лайку" });
   }
 };
+
+
+// Отримати коментарі продукту
+export const getComments = async (req, res) => {
+  try {
+    const { categoryId, subcategoryId, productId } = req.params;
+
+    const category = await ProductModel.findById(categoryId);
+    if (!category) return res.status(404).json({ message: "Категорія не знайдена" });
+
+    const subcategory = category.subcategories.id(subcategoryId);
+    if (!subcategory) return res.status(404).json({ message: "Підкатегорія не знайдена" });
+
+    const product = subcategory.items.id(productId);
+    if (!product) return res.status(404).json({ message: "Продукт не знайдено" });
+
+    res.json(product.comments || []);
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ message: "Не вдалося отримати коментарі" });
+  }
+};
+
+// Додати коментар до продукту
+export const addComment = async (req, res) => {
+  console.log("BODY:", req.body);
+  try {
+    const { categoryId, subcategoryId, productId } = req.params;
+    const { userId, fullName, text } = req.body;
+
+    if (!text || !userId || !fullName) {
+      return res.status(400).json({ message: "Необхідні поля відсутні" });
+    }
+
+    const category = await ProductModel.findById(categoryId);
+    if (!category) return res.status(404).json({ message: "Категорія не знайдена" });
+
+    const subcategory = category.subcategories.id(subcategoryId);
+    if (!subcategory) return res.status(404).json({ message: "Підкатегорія не знайдена" });
+
+    const product = subcategory.items.id(productId);
+    if (!product) return res.status(404).json({ message: "Продукт не знайдено" });
+
+    const newComment = {
+      _id: uuidv4(),
+      userId,
+      fullName,
+      text,
+      createdAt: new Date(),
+    };
+
+    product.comments = product.comments || [];
+    product.comments.push(newComment);
+
+    category.markModified("subcategories");
+    await category.save();
+
+    res.status(201).json(newComment);
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ message: "Не вдалося додати коментар" });
+  }
+};

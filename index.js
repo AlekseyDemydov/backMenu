@@ -17,6 +17,7 @@ import { Product } from "./models/index.js";
 import productRoutes from "./routes/productRoutes.js";
 import authRoutes from "./routes/authRoutes.js";
 import likeRoutes from "./routes/likeRoutes.js";
+import commentRoutes from "./routes/CommentRoutes.js";
 
 
 dotenv.config();
@@ -83,6 +84,8 @@ app.set('ProductModel', Product);
 app.use("/api/products", productRoutes);
 app.use("/auth", authRoutes);
 app.use("/api/products", likeRoutes);
+app.use("/api/products", commentRoutes);
+
 
 // Маршрут, що викликається, якщо запит не знайденоj
 app.use((req, res, next) => {
