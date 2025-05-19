@@ -16,6 +16,7 @@ import { Product } from "./models/index.js";
 // Імпортуємо контролери для роботи з роутами
 import productRoutes from "./routes/productRoutes.js";
 import authRoutes from "./routes/authRoutes.js";
+import likeRoutes from "./routes/likeRoutes.js";
 
 
 dotenv.config();
@@ -81,6 +82,7 @@ app.set('ProductModel', Product);
 // Маршрути для продуктів
 app.use("/api/products", productRoutes);
 app.use("/auth", authRoutes);
+app.use("/api/products", likeRoutes);
 
 // Маршрут, що викликається, якщо запит не знайденоj
 app.use((req, res, next) => {
@@ -95,7 +97,7 @@ app.use((err, req, res, next) => {
 
 
 
-// const PORT = process.env.PORT || 4444;
+// const PORT =  4444;
 // app.listen(PORT, () => {
 //   console.log(`Server is running on port ${PORT}`);
 // });

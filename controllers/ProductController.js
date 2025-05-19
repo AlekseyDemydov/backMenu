@@ -63,10 +63,12 @@ export const addProduct = async (req, res) => {
     };
 
     const category = await ProductModel.findById(categoryId);
-    if (!category) return res.status(404).json({ message: "Категорія не знайдена" });
+    if (!category)
+      return res.status(404).json({ message: "Категорія не знайдена" });
 
     const subcategory = category.subcategories.id(subcategoryId);
-    if (!subcategory) return res.status(404).json({ message: "Підкатегорія не знайдена" });
+    if (!subcategory)
+      return res.status(404).json({ message: "Підкатегорія не знайдена" });
 
     subcategory.items.push(productData);
     await category.save();
@@ -84,13 +86,18 @@ export const updateProduct = async (req, res) => {
     const productData = req.body;
 
     const oldCategory = await ProductModel.findById(categoryId);
-    if (!oldCategory) return res.status(404).json({ message: "Категорія не знайдена" });
+    if (!oldCategory)
+      return res.status(404).json({ message: "Категорія не знайдена" });
 
     const oldSubcategory = oldCategory.subcategories.id(subcategoryId);
-    if (!oldSubcategory) return res.status(404).json({ message: "Підкатегорія не знайдена" });
+    if (!oldSubcategory)
+      return res.status(404).json({ message: "Підкатегорія не знайдена" });
 
-    const productIndex = oldSubcategory.items.findIndex(p => p._id.toString() === productId);
-    if (productIndex === -1) return res.status(404).json({ message: "Продукт не знайдено" });
+    const productIndex = oldSubcategory.items.findIndex(
+      (p) => p._id.toString() === productId
+    );
+    if (productIndex === -1)
+      return res.status(404).json({ message: "Продукт не знайдено" });
 
     const product = oldSubcategory.items[productIndex];
 
@@ -110,10 +117,14 @@ export const updateProduct = async (req, res) => {
 
     // Додаємо в нову категорію/підкатегорію
     const newCategory = await ProductModel.findById(productData.categoryId);
-    if (!newCategory) return res.status(404).json({ message: "Нова категорія не знайдена" });
+    if (!newCategory)
+      return res.status(404).json({ message: "Нова категорія не знайдена" });
 
-    const newSubcategory = newCategory.subcategories.id(productData.subcategoryId);
-    if (!newSubcategory) return res.status(404).json({ message: "Нова підкатегорія не знайдена" });
+    const newSubcategory = newCategory.subcategories.id(
+      productData.subcategoryId
+    );
+    if (!newSubcategory)
+      return res.status(404).json({ message: "Нова підкатегорія не знайдена" });
 
     newSubcategory.items.push(productData);
 
@@ -130,20 +141,22 @@ export const updateProduct = async (req, res) => {
   }
 };
 
-
 // Видалити продукт
 export const deleteProduct = async (req, res) => {
   try {
     const { categoryId, subcategoryId, productId } = req.params;
 
     const category = await ProductModel.findById(categoryId);
-    if (!category) return res.status(404).json({ message: "Категорія не знайдена" });
+    if (!category)
+      return res.status(404).json({ message: "Категорія не знайдена" });
 
     const subcategory = category.subcategories.id(subcategoryId);
-    if (!subcategory) return res.status(404).json({ message: "Підкатегорія не знайдена" });
+    if (!subcategory)
+      return res.status(404).json({ message: "Підкатегорія не знайдена" });
 
     const product = subcategory.items.id(productId);
-    if (!product) return res.status(404).json({ message: "Продукт не знайдено" });
+    if (!product)
+      return res.status(404).json({ message: "Продукт не знайдено" });
 
     product.deleteOne();
     category.markModified("subcategories");
@@ -153,5 +166,48 @@ export const deleteProduct = async (req, res) => {
   } catch (err) {
     console.error("Помилка видалення:", err);
     res.status(500).json({ message: "Не вдалося видалити продукт" });
+  }
+};
+export const toggleLike = async (req, res) => {
+  try {
+    const { categoryId, subcategoryId, productId } = req.params;
+    const userId = req.userId; // має бути із middleware авторизації
+
+    if (!userId) {
+      return res.status(401).json({ message: "Неавторизований" });
+    }
+
+    const category = await ProductModel.findById(categoryId);
+    if (!category)
+      return res.status(404).json({ message: "Категорія не знайдена" });
+
+    const subcategory = category.subcategories.id(subcategoryId);
+    if (!subcategory)
+      return res.status(404).json({ message: "Підкатегорія не знайдена" });
+
+    const product = subcategory.items.id(productId);
+    if (!product)
+      return res.status(404).json({ message: "Продукт не знайдено" });
+
+    const userIdStr = userId.toString();
+    const liked = product.likes.some((id) => id.toString() === userIdStr);
+
+    if (liked) {
+      product.likes = product.likes.filter((id) => id.toString() !== userIdStr);
+    } else {
+      product.likes.push(userIdStr);
+    }
+
+    category.markModified("subcategories");
+    await category.save();
+
+    res.json({
+      liked: !liked,
+      likes: product.likes,
+      likesCount: product.likes.length,
+    });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ message: "Помилка лайку" });
   }
 };

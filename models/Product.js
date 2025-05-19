@@ -40,7 +40,11 @@ const ProductSchema = new Schema({
   _id: {
     type: String,
     default: uuidv4, // Автоматичне генерування унікального ID
-  }
+  },
+  likes: {
+  type: [String], // масив ID користувачів
+  default: [],
+},
 }, {
   timestamps: true,  // Додаємо час створення та оновлення
 });
@@ -78,3 +82,6 @@ const CategorySchema = new Schema({
 const ProductModel = mongoose.model("Category", CategorySchema);
 
 export default ProductModel;
+
+
+
