@@ -84,7 +84,7 @@ app.set('ProductModel', Product);
 app.use("/api/products", productRoutes);
 app.use("/auth", authRoutes);
 app.use("/api/products", likeRoutes);
-app.use("/api/products", commentRoutes);
+app.use("/api", commentRoutes);
 
 
 // Маршрут, що викликається, якщо запит не знайденоj
