@@ -30,7 +30,7 @@ const ProductSchema = new Schema(
       type: String,
       default: "",
     },
-    isNew: {
+    isNewProduct: {
       type: Boolean,
       default: false, // за замовчуванням товар не новий
     },
