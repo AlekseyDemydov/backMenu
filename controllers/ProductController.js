@@ -57,25 +57,34 @@ export const addSubcategory = async (req, res) => {
 export const addProduct = async (req, res) => {
   try {
     const { categoryId, subcategoryId } = req.params;
+
     const productData = {
       ...req.body,
       _id: uuidv4(),
     };
 
+    // Переконайся, що обов'язкові поля є
+    if (!productData.title || !productData.price || !productData.src) {
+      return res.status(400).json({ message: "Відсутні обов'язкові поля продукту" });
+    }
+
     const category = await ProductModel.findById(categoryId);
-    if (!category)
+    if (!category) {
       return res.status(404).json({ message: "Категорія не знайдена" });
+    }
 
     const subcategory = category.subcategories.id(subcategoryId);
-    if (!subcategory)
+    if (!subcategory) {
       return res.status(404).json({ message: "Підкатегорія не знайдена" });
+    }
 
     subcategory.items.push(productData);
     await category.save();
 
-    res.json(subcategory);
+    res.status(201).json({ message: "Продукт додано", product: productData });
   } catch (err) {
-    res.status(500).json({ message: "Не вдалося додати продукт" });
+    console.error("Error in addProduct:", err);
+    res.status(500).json({ message: "Не вдалося додати продукт", error: err.message });
   }
 };
 
@@ -101,28 +110,28 @@ export const updateProduct = async (req, res) => {
 
     const product = oldSubcategory.items[productIndex];
 
-    // Якщо не змінилася категорія і підкатегорія, просто оновлюємо:
+    // Перевірка, чи є у productData categoryId і subcategoryId
     if (
+      productData.categoryId &&
+      productData.subcategoryId &&
       categoryId === productData.categoryId &&
       subcategoryId === productData.subcategoryId
     ) {
+      // Оновлюємо в тій же категорії
       Object.assign(product, productData);
       oldCategory.markModified("subcategories");
       await oldCategory.save();
       return res.json(product);
     }
 
-    // Інакше: видаляємо з поточного місця
+    // Якщо категорія або підкатегорія змінилися
     oldSubcategory.items.splice(productIndex, 1);
 
-    // Додаємо в нову категорію/підкатегорію
     const newCategory = await ProductModel.findById(productData.categoryId);
     if (!newCategory)
       return res.status(404).json({ message: "Нова категорія не знайдена" });
 
-    const newSubcategory = newCategory.subcategories.id(
-      productData.subcategoryId
-    );
+    const newSubcategory = newCategory.subcategories.id(productData.subcategoryId);
     if (!newSubcategory)
       return res.status(404).json({ message: "Нова підкатегорія не знайдена" });
 

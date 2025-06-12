@@ -20,7 +20,7 @@ const ProductSchema = new Schema(
     },
     src: {
       type: String,
-      required: [true, "Image source is required"],
+      // required: [true, "Image source is required"],
     },
     text: {
       type: String,
