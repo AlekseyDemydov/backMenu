@@ -24,7 +24,7 @@ dotenv.config();
 
 // Підключаємось до бази даних MongoDB
 mongoose.connect(process.env.MONGODB_URI)
-  .then(() => console.log("DB connected"))
+  .then(() => console.log("✅ DB connected"))
   .catch((err) => console.error("DB connection error", err));
 
 // Створюємо екземпляр додатку Express
