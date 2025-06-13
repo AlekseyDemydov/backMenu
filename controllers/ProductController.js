@@ -94,53 +94,51 @@ export const updateProduct = async (req, res) => {
     const { categoryId, subcategoryId, productId } = req.params;
     const productData = req.body;
 
-    const oldCategory = await ProductModel.findById(categoryId);
-    if (!oldCategory)
-      return res.status(404).json({ message: "Категорія не знайдена" });
+    const category = await ProductModel.findById(categoryId);
+    if (!category) return res.status(404).json({ message: "Категорія не знайдена" });
 
-    const oldSubcategory = oldCategory.subcategories.id(subcategoryId);
-    if (!oldSubcategory)
-      return res.status(404).json({ message: "Підкатегорія не знайдена" });
+    const subcategory = category.subcategories.id(subcategoryId);
+    if (!subcategory) return res.status(404).json({ message: "Підкатегорія не знайдена" });
 
-    const productIndex = oldSubcategory.items.findIndex(
-      (p) => p._id.toString() === productId
-    );
-    if (productIndex === -1)
-      return res.status(404).json({ message: "Продукт не знайдено" });
+    const product = subcategory.items.id(productId);
+    if (!product) return res.status(404).json({ message: "Продукт не знайдено" });
 
-    const product = oldSubcategory.items[productIndex];
-
-    // Перевірка, чи є у productData categoryId і subcategoryId
     if (
       productData.categoryId &&
       productData.subcategoryId &&
       categoryId === productData.categoryId &&
       subcategoryId === productData.subcategoryId
     ) {
-      // Оновлюємо в тій же категорії
-      Object.assign(product, productData);
-      oldCategory.markModified("subcategories");
-      await oldCategory.save();
+      // Оновлюємо поля продукту через set()
+      product.set(productData);
+
+      // Явно оновлюємо updatedAt
+      product.updatedAt = new Date();
+
+      // Потрібно явно сказати Mongoose, що поле вкладеного масиву оновлено
+      category.markModified("subcategories");
+
+      await category.save();
+
       return res.json(product);
     }
 
-    // Якщо категорія або підкатегорія змінилися
-    oldSubcategory.items.splice(productIndex, 1);
+    // Якщо змінюємо категорію чи підкатегорію (переміщаємо продукт)
+    subcategory.items.id(productId).remove();
 
     const newCategory = await ProductModel.findById(productData.categoryId);
-    if (!newCategory)
-      return res.status(404).json({ message: "Нова категорія не знайдена" });
+    if (!newCategory) return res.status(404).json({ message: "Нова категорія не знайдена" });
 
     const newSubcategory = newCategory.subcategories.id(productData.subcategoryId);
-    if (!newSubcategory)
-      return res.status(404).json({ message: "Нова підкатегорія не знайдена" });
+    if (!newSubcategory) return res.status(404).json({ message: "Нова підкатегорія не знайдена" });
 
+    productData.updatedAt = new Date();
     newSubcategory.items.push(productData);
 
-    oldCategory.markModified("subcategories");
+    category.markModified("subcategories");
     newCategory.markModified("subcategories");
 
-    await oldCategory.save();
+    await category.save();
     await newCategory.save();
 
     res.json(productData);
@@ -149,6 +147,9 @@ export const updateProduct = async (req, res) => {
     res.status(500).json({ message: "Не вдалося оновити продукт" });
   }
 };
+
+
+
 
 // Видалити продукт
 export const deleteProduct = async (req, res) => {
